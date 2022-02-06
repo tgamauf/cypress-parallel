@@ -7,7 +7,7 @@ import {
   setOutput,
 } from "@actions/core";
 import {create as createGlobber} from "@actions/glob";
-import {readFile} from "fs/promises";
+import {readFileSync} from "fs";
 import * as path from "path";
 
 
@@ -93,7 +93,7 @@ export default async function parse(): Promise<void> {
 
 async function loadCypressConfig(configFilePath: string): Promise<CypressConfig | null> {
   try {
-    const data = await readFile(configFilePath);
+    const data = readFileSync(configFilePath);
     const config = JSON.parse(data.toString());
 
     return {

@@ -66,7 +66,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.DEFAULT_TEST_FILES = exports.DEFAULT_INTEGRATION_FOLDER = exports.CYPRESS_CONFIG_FILE_NAME = void 0;
 const core_1 = __nccwpck_require__(186);
 const glob_1 = __nccwpck_require__(90);
-const promises_1 = __nccwpck_require__(292);
+const fs_1 = __nccwpck_require__(147);
 const path = __importStar(__nccwpck_require__(17));
 const CYPRESS_CONFIG_FILE_NAME = "cypress.json";
 exports.CYPRESS_CONFIG_FILE_NAME = CYPRESS_CONFIG_FILE_NAME;
@@ -124,7 +124,7 @@ exports["default"] = parse;
 function loadCypressConfig(configFilePath) {
     return __awaiter(this, void 0, void 0, function* () {
         try {
-            const data = yield (0, promises_1.readFile)(configFilePath);
+            const data = (0, fs_1.readFileSync)(configFilePath);
             const config = JSON.parse(data.toString());
             return Object.assign({ integrationFolder: DEFAULT_INTEGRATION_FOLDER, testFiles: DEFAULT_TEST_FILES }, config);
         }
@@ -4196,14 +4196,6 @@ module.exports = require("events");
 
 "use strict";
 module.exports = require("fs");
-
-/***/ }),
-
-/***/ 292:
-/***/ ((module) => {
-
-"use strict";
-module.exports = require("fs/promises");
 
 /***/ }),
 

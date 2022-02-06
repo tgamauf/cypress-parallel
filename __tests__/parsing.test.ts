@@ -1,4 +1,4 @@
-import {mkdir, mkdtemp, rm, symlink, writeFile} from "fs/promises";
+import {mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync} from "fs";
 import * as path from "path";
 import {tmpdir} from "os";
 
@@ -17,16 +17,16 @@ const mockSetOutput = setOutput as jest.MockedFunction<typeof setOutput>;
 
 const DEFAULT_TEST_SPEC_NAMES = ["test1.spec.ts", "test2.ts"];
 
-async function createCypressConfig(path: string, config?: {
+function createCypressConfig(path: string, config?: {
     componentFolder?: string,
     ignoreTestFiles?: string | string[],
     integrationFolder?: string,
     testFiles?: string | string[]
   }) {
-  await writeFile(`${path}/${CYPRESS_CONFIG_FILE_NAME}`, JSON.stringify(config));
+  writeFileSync(`${path}/${CYPRESS_CONFIG_FILE_NAME}`, JSON.stringify(config));
 }
 
-async function createTestSpecs(testDir: string, testFilenames: string[]) {
+function createTestSpecs(testDir: string, testFilenames: string[]) {
   if (!testDir) {
     throw new Error("No test directory provided");
   }
@@ -36,29 +36,32 @@ async function createTestSpecs(testDir: string, testFilenames: string[]) {
 
   for (const name of testFilenames) {
     const filePath = path.join(testDir, path.dirname(name));
-    await mkdir(filePath, {recursive: true});
-    await writeFile(path.join(testDir, name), "test");
+    mkdirSync(filePath, {recursive: true});
+    writeFileSync(path.join(testDir, name), "test");
   }
 }
 
 describe("Test parsing", () => {
   let baseDir;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     // Setup temporary test directory and set it as our working directory
-    baseDir = await mkdtemp(path.join(tmpdir(), "cypress-parallel_"));
+    baseDir = mkdtempSync(path.join(tmpdir(), "cypress-parallel_"));
     process.chdir(baseDir);
   });
-  afterEach(async () => {
-    // Clean up temporary test directory
-    await rm(baseDir, { recursive: true, force: true });
+  afterEach(() => {
+    // Clean up temporary test directory, but ignore if it doesn't work as we
+    //  use a temporary directory anyway
+    try {
+      rmSync(baseDir, {recursive: true, force: true});
+    } catch (e) {}
   })
 
   it("default config", async () => {
     const testDir = path.join(baseDir, DEFAULT_INTEGRATION_FOLDER);
 
-    await createCypressConfig(baseDir, {});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
@@ -74,8 +77,8 @@ describe("Test parsing", () => {
     const integrationFolder = "tests";
     const testDir = path.join(baseDir, integrationFolder);
 
-    await createCypressConfig(baseDir, {integrationFolder: integrationFolder});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {integrationFolder: integrationFolder});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
@@ -91,8 +94,8 @@ describe("Test parsing", () => {
     const componentFolder = "tests";
     const testDir = path.join(baseDir, componentFolder);
 
-    await createCypressConfig(baseDir, {componentFolder: componentFolder});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {componentFolder: componentFolder});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
@@ -109,8 +112,8 @@ describe("Test parsing", () => {
   it("test file pattern configured", async () => {
     const testDir = path.join(baseDir, DEFAULT_INTEGRATION_FOLDER);
 
-    await createCypressConfig(baseDir, {testFiles: "**/*.spec.ts"});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {testFiles: "**/*.spec.ts"});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
@@ -125,8 +128,8 @@ describe("Test parsing", () => {
   it("ignore pattern configured", async () => {
     const testDir = path.join(baseDir, DEFAULT_INTEGRATION_FOLDER);
 
-    await createCypressConfig(baseDir, {ignoreTestFiles: "**/*.spec.ts"});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {ignoreTestFiles: "**/*.spec.ts"});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
@@ -143,11 +146,11 @@ describe("Test parsing", () => {
 
     // Change working directory so the Cypress config shouldn't be found
     const workingFolder = "cwd";
-    await mkdir(workingFolder);
+    mkdirSync(workingFolder);
     process.chdir(workingFolder)
 
     const testDir = path.join(baseDir, workingFolder, DEFAULT_INTEGRATION_FOLDER);
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce(path.join("..", CYPRESS_CONFIG_FILE_NAME));
@@ -164,11 +167,11 @@ describe("Test parsing", () => {
     const testDir = path.join(baseDir, integrationFolder);
     const realTestDir = path.join(baseDir, "tests");
 
-    await mkdir(realTestDir, {recursive: true});
-    await symlink(realTestDir, testDir);
+    mkdirSync(realTestDir, {recursive: true});
+    symlinkSync(realTestDir, testDir);
 
-    await createCypressConfig(baseDir, {integrationFolder: integrationFolder});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {integrationFolder: integrationFolder});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
@@ -185,11 +188,11 @@ describe("Test parsing", () => {
     const testDir = path.join(baseDir, integrationFolder);
     const realTestDir = path.join(baseDir, "tests");
 
-    await mkdir(realTestDir, {recursive: true});
-    await symlink(realTestDir, testDir);
+    mkdirSync(realTestDir, {recursive: true});
+    symlinkSync(realTestDir, testDir);
 
-    await createCypressConfig(baseDir, {integrationFolder: integrationFolder});
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createCypressConfig(baseDir, {integrationFolder: integrationFolder});
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(false);
     mockGetInput.mockReturnValueOnce("");
@@ -229,15 +232,15 @@ describe("Test parsing", () => {
         "b/b.spec.ts.bak",
       ]
 
-      await createCypressConfig(baseDir, {
+      createCypressConfig(baseDir, {
         componentFolder: componentFolder,
         ignoreTestFiles: ["**/*.old.spec.ts", "**/test.old/" ],
         integrationFolder: integrationFolder,
         testFiles: ["**/*.spec.ts", "**/*.test.ts"]
       });
 
-      await createTestSpecs(integrationFolder, integrationTestFilenames);
-      await createTestSpecs(componentFolder, srcFilePaths);
+      createTestSpecs(integrationFolder, integrationTestFilenames);
+      createTestSpecs(componentFolder, srcFilePaths);
 
       mockGetBooleanInput.mockReturnValueOnce(true);
       mockGetInput.mockReturnValueOnce("");
@@ -259,7 +262,7 @@ describe("Test parsing", () => {
   it("no Cypress config", async () => {
     const testDir = path.join(baseDir, DEFAULT_INTEGRATION_FOLDER);
 
-    await createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
+    createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
     mockGetInput.mockReturnValueOnce("");
