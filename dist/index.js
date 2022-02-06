@@ -79,14 +79,14 @@ exports.DEFAULT_TEST_FILES = DEFAULT_TEST_FILES;
 function parse() {
     return __awaiter(this, void 0, void 0, function* () {
         const config = {
-            cypressConfigFilePath: (0, core_1.getInput)("cypress-config-file-path"),
+            workingDirectory: (0, core_1.getInput)("working-directory"),
             followSymbolicLinks: (0, core_1.getBooleanInput)("follow-symbolic-links")
         };
         try {
             (0, core_1.info)(`Configuration: ${JSON.stringify(config, null, 2)}`);
             let cypressConfigFilePath;
-            if (config.cypressConfigFilePath) {
-                cypressConfigFilePath = config.cypressConfigFilePath;
+            if (config.workingDirectory) {
+                cypressConfigFilePath = path.join(config.workingDirectory, CYPRESS_CONFIG_FILE_NAME);
             }
             else {
                 cypressConfigFilePath = yield findCypressConfigFile();

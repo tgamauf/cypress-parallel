@@ -20,7 +20,7 @@ const DEFAULT_TEST_FILES = "**/*.*";
 
 
 interface Config {
-  cypressConfigFilePath: string;
+  workingDirectory: string;
   followSymbolicLinks: boolean;
 }
 
@@ -40,7 +40,7 @@ interface TestFiles {
 
 export default async function parse(): Promise<void> {
   const config: Config = {
-    cypressConfigFilePath: getInput("cypress-config-file-path"),
+    workingDirectory: getInput("working-directory"),
     followSymbolicLinks: getBooleanInput("follow-symbolic-links")
   }
 
@@ -48,8 +48,8 @@ export default async function parse(): Promise<void> {
     info(`Configuration: ${JSON.stringify(config, null, 2)}`);
 
     let cypressConfigFilePath;
-    if (config.cypressConfigFilePath) {
-      cypressConfigFilePath = config.cypressConfigFilePath
+    if (config.workingDirectory) {
+      cypressConfigFilePath = path.join(config.workingDirectory, CYPRESS_CONFIG_FILE_NAME);
     } else {
       cypressConfigFilePath = await findCypressConfigFile();
     }

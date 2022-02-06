@@ -29,16 +29,14 @@ found in the configuration file.
 ```yaml
 - uses tgamauf/cypress-parallel@v1
   with:
-    # Path to the Cypress config file. This is only relevant when the config file is
-    #  located outside the working directory or if multiple config files exist.
-    cypress-config-file-path: ""
+    # This is the directory of the Cypress config file. If it isn't provided the current
+    #  working directory is used.
+    working-directory: ""
 
     # Indicates if search should follow symbolic links, which can slow down execution in
     #  certain circumstances. Default: true.
     follow-symbolic-links: true
 ```
-
-# TODO: how to set working directory
 
 ## Example workflow
 

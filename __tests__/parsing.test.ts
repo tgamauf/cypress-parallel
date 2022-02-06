@@ -147,7 +147,7 @@ describe("Test parsing", () => {
     );
   });
 
-  it("custom Cypress config file location specified", async () => {
+  it("specify working directory", async () => {
     await createCypressConfig(baseDir, {});
 
     // Change working directory so the Cypress config shouldn't be found
@@ -159,7 +159,7 @@ describe("Test parsing", () => {
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce(path.join("..", CYPRESS_CONFIG_FILE_NAME));
+    mockGetInput.mockReturnValueOnce("../");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
