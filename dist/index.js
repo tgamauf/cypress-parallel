@@ -72,24 +72,26 @@ function parse() {
         };
         try {
             (0, core_1.info)(`Configuration: ${JSON.stringify(config, null, 2)}`);
-            let cypressConfigFilePath;
+            let workingDirectory;
             if (config.workingDirectory) {
-                cypressConfigFilePath = path.join(config.workingDirectory, CYPRESS_CONFIG_FILE_NAME);
+                workingDirectory = config.workingDirectory;
             }
             else {
-                cypressConfigFilePath = yield findCypressConfigFile();
+                workingDirectory = yield findWorkingDirectory();
             }
-            if (!cypressConfigFilePath) {
+            if (!workingDirectory) {
                 (0, core_1.setFailed)("Cypress config file could not be found.");
                 return;
             }
-            const cypressConfig = yield loadCypressConfig(cypressConfigFilePath);
+            (0, core_1.info)(`Working directory: ${workingDirectory}`);
+            // Change to the working directory
+            process.chdir(workingDirectory);
+            const cypressConfig = yield loadCypressConfig();
             if (!cypressConfig) {
                 (0, core_1.setFailed)("Could not load Cypress config.");
                 return;
             }
-            (0, core_1.info)(`Using Cypress config at "${cypressConfigFilePath}"`);
-            (0, core_1.info)(`Cypress config: ${cypressConfig}`);
+            (0, core_1.info)(`Cypress config: ${JSON.stringify(cypressConfig, null, 2)}`);
             const { integrationTests, componentTests } = yield parseTests(config, cypressConfig);
             if ((integrationTests.length === 0)
                 && (!componentTests || ((componentTests === null || componentTests === void 0 ? void 0 : componentTests.length) === 0))) {
@@ -97,10 +99,10 @@ function parse() {
                 return;
             }
             (0, core_1.setOutput)("integration-tests", integrationTests);
-            (0, core_1.notice)(`Integration tests found: ${JSON.stringify(integrationTests)}`);
+            (0, core_1.notice)(`Integration tests found: ${JSON.stringify(integrationTests, null, 2)}`);
             if (componentTests) {
                 (0, core_1.setOutput)("component-tests", componentTests);
-                (0, core_1.notice)(`Component tests found: ${JSON.stringify(componentTests)}`);
+                (0, core_1.notice)(`Component tests found: ${JSON.stringify(componentTests, null, 2)}`);
             }
         }
         catch (e) {
@@ -109,25 +111,12 @@ function parse() {
     });
 }
 exports["default"] = parse;
-function loadCypressConfig(configFilePath) {
-    return __awaiter(this, void 0, void 0, function* () {
-        try {
-            const data = (0, fs_1.readFileSync)(configFilePath);
-            const config = JSON.parse(data.toString());
-            return Object.assign({ integrationFolder: DEFAULT_INTEGRATION_FOLDER, testFiles: DEFAULT_TEST_FILES }, config);
-        }
-        catch (e) {
-            (0, core_1.error)(`Failed to load Cypress config: ${e}`);
-            return null;
-        }
-    });
-}
-function findCypressConfigFile() {
+function findWorkingDirectory() {
     return __awaiter(this, void 0, void 0, function* () {
         const globber = yield (0, glob_1.create)(`**/${CYPRESS_CONFIG_FILE_NAME}`);
         const results = yield globber.glob();
         (0, core_1.debug)(`Cypress config files found: ${JSON.stringify(results, null, 2)}`);
-        if (!results) {
+        if (results.length == 0) {
             (0, core_1.error)("No Cypress config file found.");
             return null;
         }
@@ -135,7 +124,20 @@ function findCypressConfigFile() {
             (0, core_1.error)("Multiple Cypress config file found.");
             return null;
         }
-        return results[0];
+        return path.dirname(results[0]);
+    });
+}
+function loadCypressConfig() {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            const data = (0, fs_1.readFileSync)(CYPRESS_CONFIG_FILE_NAME);
+            const config = JSON.parse(data.toString());
+            return Object.assign({ integrationFolder: DEFAULT_INTEGRATION_FOLDER, testFiles: DEFAULT_TEST_FILES }, config);
+        }
+        catch (e) {
+            (0, core_1.error)(`Failed to load Cypress config: ${e}`);
+            return null;
+        }
     });
 }
 function parseTests(config, cypressConfig) {

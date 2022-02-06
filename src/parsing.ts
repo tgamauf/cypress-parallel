@@ -8,7 +8,7 @@ import {
   setOutput,
 } from "@actions/core";
 import {create as createGlobber} from "@actions/glob";
-import {readFileSync} from "fs";
+import {accessSync, constants, readFileSync} from "fs";
 import * as path from "path";
 
 
@@ -48,27 +48,29 @@ export default async function parse(): Promise<void> {
   try {
     info(`Configuration: ${JSON.stringify(config, null, 2)}`);
 
-    let cypressConfigFilePath;
+    let workingDirectory;
     if (config.workingDirectory) {
-      cypressConfigFilePath = path.join(config.workingDirectory, CYPRESS_CONFIG_FILE_NAME);
+      workingDirectory = config.workingDirectory;
     } else {
-      cypressConfigFilePath = await findCypressConfigFile();
+      workingDirectory = await findWorkingDirectory();
     }
 
-    if (!cypressConfigFilePath) {
+    if (!workingDirectory) {
       setFailed("Cypress config file could not be found.");
       return;
     }
 
-    const cypressConfig = await loadCypressConfig(cypressConfigFilePath);
+    info(`Working directory: ${workingDirectory}`);
 
+    // Change to the working directory
+    process.chdir(workingDirectory);
+
+    const cypressConfig = await loadCypressConfig();
     if (!cypressConfig) {
       setFailed("Could not load Cypress config.");
       return;
     }
-
-    info(`Using Cypress config at "${cypressConfigFilePath}"`);
-    info(`Cypress config: ${JSON.stringify(cypressConfig)}`);
+    info(`Cypress config: ${JSON.stringify(cypressConfig, null, 2)}`);
 
     const {integrationTests, componentTests} = await parseTests(config, cypressConfig);
 
@@ -80,21 +82,39 @@ export default async function parse(): Promise<void> {
 
     setOutput("integration-tests", integrationTests);
 
-    notice(`Integration tests found: ${JSON.stringify(integrationTests)}`);
+    notice(`Integration tests found: ${JSON.stringify(integrationTests, null, 2)}`);
 
     if (componentTests) {
       setOutput("component-tests", componentTests);
 
-      notice(`Component tests found: ${JSON.stringify(componentTests)}`);
+      notice(`Component tests found: ${JSON.stringify(componentTests, null, 2)}`);
     }
   } catch (e) {
     setFailed(`Action failed with error: ${e}`);
   }
 }
 
-async function loadCypressConfig(configFilePath: string): Promise<CypressConfig | null> {
+async function findWorkingDirectory(): Promise<string | null> {
+  const globber = await createGlobber(`**/${CYPRESS_CONFIG_FILE_NAME}`);
+  const results = await globber.glob();
+
+  debug(`Cypress config files found: ${JSON.stringify(results, null, 2)}`);
+
+  if (results.length == 0) {
+    error("No Cypress config file found.");
+    return null;
+  }
+  if (results.length > 1) {
+    error("Multiple Cypress config file found.");
+    return null;
+  }
+
+  return path.dirname(results[0]);
+}
+
+async function loadCypressConfig(): Promise<CypressConfig | null> {
   try {
-    const data = readFileSync(configFilePath);
+    const data = readFileSync(CYPRESS_CONFIG_FILE_NAME);
     const config = JSON.parse(data.toString());
 
     return {
@@ -106,24 +126,6 @@ async function loadCypressConfig(configFilePath: string): Promise<CypressConfig 
     error(`Failed to load Cypress config: ${e}`);
     return null;
   }
-}
-
-async function findCypressConfigFile(): Promise<string | null> {
-  const globber = await createGlobber(`**/${CYPRESS_CONFIG_FILE_NAME}`);
-  const results = await globber.glob();
-
-  debug(`Cypress config files found: ${JSON.stringify(results, null, 2)}`);
-
-  if (!results) {
-    error("No Cypress config file found.");
-    return null;
-  }
-  if (results.length > 1) {
-    error("Multiple Cypress config file found.");
-    return null;
-  }
-
-  return results[0];
 }
 
 async function parseTests(

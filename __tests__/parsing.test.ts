@@ -148,18 +148,19 @@ describe("Test parsing", () => {
   });
 
   it("specify working directory", async () => {
-    await createCypressConfig(baseDir, {});
+    // Create invalid Cypress config as a check
+    createCypressConfig(baseDir, {integrationFolder: "invalid"});
 
-    // Change working directory so the Cypress config shouldn't be found
-    const workingFolder = "cwd";
-    mkdirSync(workingFolder);
-    process.chdir(workingFolder)
+    const workDirFolder = "cwd";
+    const workDir = path.join(baseDir, workDirFolder);
+    mkdirSync(workDir, {recursive: true});
+    createCypressConfig(workDir, {});
 
-    const testDir = path.join(baseDir, workingFolder, DEFAULT_INTEGRATION_FOLDER);
+    const testDir = path.join(workDir, DEFAULT_INTEGRATION_FOLDER);
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
     mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("../");
+    mockGetInput.mockReturnValueOnce(workDirFolder);
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
