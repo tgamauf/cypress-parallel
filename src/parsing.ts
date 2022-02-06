@@ -68,7 +68,7 @@ export default async function parse(): Promise<void> {
     }
 
     info(`Using Cypress config at "${cypressConfigFilePath}"`);
-    info(`Cypress config: ${cypressConfig}`);
+    info(`Cypress config: ${JSON.stringify(cypressConfig)}`);
 
     const {integrationTests, componentTests} = await parseTests(config, cypressConfig);
 
