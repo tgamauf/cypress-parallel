@@ -117,7 +117,7 @@ jobs:
         with:
           install: false
           # To run component tests we need to use "cypress run-ct"
-          command: yarn cypress run-ct
+          command: npx cypress run-ct
           spec: ${{ matrix.spec }}
 ```
 

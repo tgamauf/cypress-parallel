@@ -3,6 +3,7 @@ import {
   getBooleanInput,
   getInput,
   info,
+  notice,
   setFailed,
   setOutput,
 } from "@actions/core";
@@ -79,12 +80,12 @@ export default async function parse(): Promise<void> {
 
     setOutput("integration-tests", integrationTests);
 
-    info(`Integration tests found: ${JSON.stringify(integrationTests)}`);
+    notice(`Integration tests found: ${JSON.stringify(integrationTests)}`);
 
     if (componentTests) {
       setOutput("component-tests", componentTests);
 
-      info(`Component tests found: ${JSON.stringify(componentTests)}`);
+      notice(`Component tests found: ${JSON.stringify(componentTests)}`);
     }
   } catch (e) {
     setFailed(`Action failed with error: ${e}`);
