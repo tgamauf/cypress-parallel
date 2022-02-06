@@ -1,0 +1,5 @@
+# We use inclusion instead of exclusion style
+*
+
+!src/
+!__test__

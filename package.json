@@ -1,0 +1,38 @@
+{
+  "name": "cypress-parallel",
+  "version": "1.0.0",
+  "main": "lib/main.js",
+  "scripts": {
+    "build": "tsc && ncc build",
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tgamauf/cypress-parallel.git"
+  },
+  "keywords": [
+    "github",
+    "actions",
+    "cypress",
+    "parallel"
+  ],
+  "author": "Thomas Gamauf",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/tgamauf/cypress-parallel/issues"
+  },
+  "homepage": "https://github.com/tgamauf/cypress-parallel#readme",
+  "dependencies": {
+    "@actions/core": "^1.6.0",
+    "@actions/glob": "^0.2.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^27.4.0",
+    "@vercel/ncc": "^0.33.1",
+    "jest": "^27.4.7",
+    "jest-circus": "^27.5.0",
+    "prettier": "^2.5.1",
+    "ts-jest": "^27.1.3",
+    "typescript": "^4.5.5"
+  }
+}

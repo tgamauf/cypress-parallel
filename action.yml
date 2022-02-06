@@ -1,0 +1,23 @@
+name: Cypress Parallel
+author: Thomas Gamauf
+description: >
+  Tooling for executing Cypress tests in parallel without Cypress Dashboard.
+branding:
+  icon: "fast-forward"
+  color: "orange"
+inputs:
+  cypress-config-file-path:
+    description: Path to the Cypress config file to use.
+    required: false
+  follow-symbolic-links:
+    description: Indicates whether to follow symbolic links.
+    required: false
+    default: true
+outputs:
+  integration-tests:
+    description: Integration test specs that have been found.
+  component-tests:
+    description: Component test specs that have been found.
+runs:
+  using: node16
+  main: dist/index.js
