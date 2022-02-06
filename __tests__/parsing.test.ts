@@ -45,8 +45,14 @@ describe("Test parsing", () => {
   let baseDir;
 
   beforeEach(() => {
+    // On MacOS the paths are somehow broken - tmpdir returns a path in /var,
+    //  but the absolute paths that are returned by the tests are /private/var.
+    //  So let's add this here so our checks work as intended ...
+    const tmpRoot = process.platform !== "darwin"
+      ? tmpdir() : path.join("/private", tmpdir());
+
     // Setup temporary test directory and set it as our working directory
-    baseDir = mkdtempSync(path.join(tmpdir(), "cypress-parallel_"));
+    baseDir = mkdtempSync(path.join(tmpRoot, "cypress-parallel_"));
     process.chdir(baseDir);
   });
   afterEach(() => {
