@@ -48,6 +48,9 @@ on: [push]
 jobs:
   prepare:
     runs-on: ubuntu-latest
+    outputs:
+      integration-tests: ${{ steps.parse.outputs.integration-tests }}
+      component-tests: ${{ steps.parse.outputs.component-tests }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -67,6 +70,7 @@ jobs:
           retention-days: 1
 
       - name: Parse test files for parallelization
+        id: parse
         uses: tgamauf/cypress-parallel@v1
 
   test-integration:
@@ -76,7 +80,7 @@ jobs:
       fail-fast: false
       matrix:
         # Run the tests in parallel, each with one of the prepared test specs
-        spec: ${{ fromJson(prepare.outputs.integration-tests) }}
+        spec: ${{ fromJson(needs.prepare.outputs.integration-tests) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -101,7 +105,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        spec: ${{ fromJson(prepare.outputs.component-tests) }}
+        spec: ${{ fromJson(needs.prepare.outputs.component-tests) }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

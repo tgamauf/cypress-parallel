@@ -80,12 +80,12 @@ export default async function parse(): Promise<void> {
       return;
     }
 
-    setOutput("integration-tests", JSON.stringify(integrationTests));
+    setOutput("integration-tests", integrationTests);
 
     notice(`Integration tests found: ${JSON.stringify(integrationTests, null, 2)}`);
 
     if (componentTests) {
-      setOutput("component-tests", JSON.stringify(componentTests));
+      setOutput("component-tests", componentTests);
 
       notice(`Component tests found: ${JSON.stringify(componentTests, null, 2)}`);
     }

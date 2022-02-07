@@ -7,7 +7,7 @@ on:
       - main
 
 jobs:
-  test:
+  unit-test:
     strategy:
       fail-fast: false
       matrix:
@@ -15,10 +15,22 @@ jobs:
         node: [ 12, 14, 16 ]
     runs-on: ${{ matrix.os }}
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
-      - uses: actions/checkout@v2
       - run: npm ci
       - run: npm run build
       - run: npm test
+  integration-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - id: parse
+        uses: ./   # Execute action using a fake Cypress test setup
+        with:
+          working-directory: __tests__/fixtures
+      - run: |
+          value="${{ fromJson(steps.parse.outputs.integration-tests)[0] }}"
+          [ -z "${value}" ] && echo "::debug::No test found" && exit 1
+          exit 0
