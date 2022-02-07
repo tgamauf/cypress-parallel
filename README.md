@@ -31,11 +31,15 @@ found in the configuration file.
   with:
     # This is the directory of the Cypress config file. If it isn't provided the current
     #  working directory is used.
-    working-directory: ""
+    working-directory:
 
     # Indicates if search should follow symbolic links, which can slow down execution in
     #  certain circumstances. Default: true.
-    follow-symbolic-links: true
+    follow-symbolic-links:
+
+    # Maximum number of test runners that should be used. This will split the tests, so
+    #  they are distributed over the defined number of runners.
+    count-runners:
 ```
 
 ## Example workflow

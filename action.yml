@@ -13,6 +13,9 @@ inputs:
     description: Indicates whether to follow symbolic links.
     required: false
     default: true
+  count-runners:
+    description: Maximum number of runners that should be used.
+    required: false
 outputs:
   integration-tests:
     description: Integration test specs that have been found.

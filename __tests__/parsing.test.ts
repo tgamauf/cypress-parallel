@@ -9,10 +9,14 @@ import parse, {CYPRESS_CONFIG_FILE_NAME, DEFAULT_INTEGRATION_FOLDER} from "../li
 
 jest.mock("@actions/core");
 
-const mockGetBooleanInput = getBooleanInput as jest.MockedFunction<typeof getBooleanInput>;
+const mockFollowSymbolicLinks = getBooleanInput as jest.MockedFunction<typeof getBooleanInput>;
 const mockGetInput = getInput as jest.MockedFunction<typeof getInput>;
 const mockSetFailed = setFailed as jest.MockedFunction<typeof setFailed>;
 const mockSetOutput = setOutput as jest.MockedFunction<typeof setOutput>;
+
+// Set default return values
+mockFollowSymbolicLinks.mockReturnValue(true);  // follow-symbolic-links input
+mockGetInput.mockReturnValue(""); // working-directory and count-runners input
 
 
 const DEFAULT_TEST_SPEC_NAMES = ["test1.spec.ts", "test2.ts"];
@@ -69,8 +73,6 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
@@ -86,8 +88,6 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {integrationFolder: integrationFolder});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
@@ -103,8 +103,6 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {componentFolder: componentFolder});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenNthCalledWith(1, "integration-tests", []);
@@ -121,8 +119,6 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {testFiles: "**/*.spec.ts"});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
@@ -137,8 +133,6 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {ignoreTestFiles: "**/*.spec.ts"});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
@@ -159,8 +153,7 @@ describe("Test parsing", () => {
     const testDir = path.join(workDir, DEFAULT_INTEGRATION_FOLDER);
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce(workDirFolder);
+    mockGetInput.mockReturnValueOnce(workDirFolder); // first call is working-directory
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
@@ -180,8 +173,6 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {integrationFolder: integrationFolder});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed.mock.calls.length).toBe(0);
     expect(mockSetOutput).toHaveBeenCalledWith(
@@ -201,11 +192,40 @@ describe("Test parsing", () => {
     createCypressConfig(baseDir, {integrationFolder: integrationFolder});
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(false);
-    mockGetInput.mockReturnValueOnce("");
+    mockFollowSymbolicLinks.mockReturnValueOnce(false);
     await parse();
     expect(mockSetFailed).toHaveBeenCalledWith("No tests found");
     expect(mockSetOutput.mock.calls.length).toBe(0);
+  });
+
+  it("test count-runners specified", async () => {
+    const testFilenames = ["t1.ts", "t2.ts", "t3.ts", "t4.ts", "t5.ts"];
+    const testDir = path.join(baseDir, DEFAULT_INTEGRATION_FOLDER);
+    const checkTestGroups = [
+      [testFilenames[0], testFilenames[1], testFilenames[2]]
+        .map((p) => path.join(testDir, p)).join(","),
+      [testFilenames[3], testFilenames[4]].map((p) => path.join(testDir, p)).join(","),
+    ]
+
+    // Use the same test spec for integration and component tests
+    createCypressConfig(baseDir, {componentFolder: DEFAULT_INTEGRATION_FOLDER});
+    createTestSpecs(testDir, testFilenames);
+
+    mockGetInput
+      .mockReturnValueOnce("")  // first call is working-directory
+      .mockReturnValueOnce("2");    // second call is count-runners
+    await parse();
+    expect(mockSetFailed.mock.calls.length).toBe(0);
+    expect(mockSetOutput).toHaveBeenNthCalledWith(
+      1,
+      "integration-tests",
+      checkTestGroups
+    );
+    expect(mockSetOutput).toHaveBeenNthCalledWith(
+      2,
+      "component-tests",
+      checkTestGroups
+    );
   });
 
   it("integration and component tests with multiple testFiles and ignoreTestFiles patterns",
@@ -249,8 +269,6 @@ describe("Test parsing", () => {
       createTestSpecs(integrationFolder, integrationTestFilenames);
       createTestSpecs(componentFolder, srcFilePaths);
 
-      mockGetBooleanInput.mockReturnValueOnce(true);
-      mockGetInput.mockReturnValueOnce("");
       await parse();
       expect(mockSetFailed.mock.calls.length).toBe(0);
       expect(mockSetOutput).toHaveBeenNthCalledWith(
@@ -271,8 +289,6 @@ describe("Test parsing", () => {
 
     createTestSpecs(testDir, DEFAULT_TEST_SPEC_NAMES);
 
-    mockGetBooleanInput.mockReturnValueOnce(true);
-    mockGetInput.mockReturnValueOnce("");
     await parse();
     expect(mockSetFailed).toHaveBeenCalledWith(
       "Cypress config file could not be found."

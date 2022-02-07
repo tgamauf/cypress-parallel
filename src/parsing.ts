@@ -1,14 +1,6 @@
-import {
-  debug, error,
-  getBooleanInput,
-  getInput,
-  info,
-  notice,
-  setFailed,
-  setOutput,
-} from "@actions/core";
+import {debug, error, getBooleanInput, getInput, info, notice, setFailed, setOutput,} from "@actions/core";
 import {create as createGlobber} from "@actions/glob";
-import {accessSync, constants, readFileSync} from "fs";
+import {readFileSync} from "fs";
 import * as path from "path";
 
 
@@ -23,6 +15,7 @@ const DEFAULT_TEST_FILES = "**/*.*";
 interface Config {
   workingDirectory: string;
   followSymbolicLinks: boolean;
+  countRunners: number;
 }
 
 // Relevant parts of the Cypress config:
@@ -42,8 +35,9 @@ interface TestFiles {
 export default async function parse(): Promise<void> {
   const config: Config = {
     workingDirectory: getInput("working-directory"),
-    followSymbolicLinks: getBooleanInput("follow-symbolic-links")
-  }
+    followSymbolicLinks: getBooleanInput("follow-symbolic-links"),
+    countRunners: Number(getInput("count-runners"))
+  };
 
   try {
     info(`Configuration: ${JSON.stringify(config, null, 2)}`);
@@ -80,14 +74,16 @@ export default async function parse(): Promise<void> {
       return;
     }
 
-    setOutput("integration-tests", integrationTests);
-
-    notice(`Integration tests found: ${JSON.stringify(integrationTests, null, 2)}`);
+    const integrationTestGroups = createTestGroups(config.countRunners, integrationTests);
+    setOutput("integration-tests", integrationTestGroups);
+    notice(`Integration tests found: ${
+      JSON.stringify(integrationTestGroups, null, 2)}`);
 
     if (componentTests) {
-      setOutput("component-tests", componentTests);
-
-      notice(`Component tests found: ${JSON.stringify(componentTests, null, 2)}`);
+      const componentTestGroups = createTestGroups(config.countRunners, componentTests);
+      setOutput("component-tests", componentTestGroups);
+      notice(`Component tests found: ${
+        JSON.stringify(componentTestGroups, null, 2)}`);
     }
   } catch (e) {
     setFailed(`Action failed with error: ${e}`);
@@ -199,6 +195,29 @@ function createGlobPattern(
     JSON.stringify(patterns, null, 2)}`);
 
   return patterns.join("\n");
+}
+
+function createTestGroups(groupCount: number, tests: string[]): string[] {
+  // If the group count isn't valid, just return the tests
+  if ((isNaN(groupCount)) || groupCount <= 0) {
+    return tests;
+  }
+
+  // Group the tests into "groupCount" chunks and then join each group with ",",
+  //  as this is how the Cypress "run" commend requires the "spec" input if
+  //  multiple tests are specified
+  const testCountByChunk = Math.ceil(tests.length / groupCount);
+  return tests.reduce((groups: string[][], item, index) => {
+    const chunkIndex = Math.floor(index / testCountByChunk)
+
+    if (!groups[chunkIndex]) {
+      groups[chunkIndex] = [] // start a new chunk
+    }
+
+    groups[chunkIndex].push(item)
+
+    return groups
+  }, []).map((group) => group.join(","))
 }
 
 export type { TestFiles };

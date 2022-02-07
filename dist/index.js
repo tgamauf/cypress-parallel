@@ -68,7 +68,8 @@ function parse() {
     return __awaiter(this, void 0, void 0, function* () {
         const config = {
             workingDirectory: (0, core_1.getInput)("working-directory"),
-            followSymbolicLinks: (0, core_1.getBooleanInput)("follow-symbolic-links")
+            followSymbolicLinks: (0, core_1.getBooleanInput)("follow-symbolic-links"),
+            countRunners: Number((0, core_1.getInput)("count-runners"))
         };
         try {
             (0, core_1.info)(`Configuration: ${JSON.stringify(config, null, 2)}`);
@@ -98,11 +99,13 @@ function parse() {
                 (0, core_1.setFailed)("No tests found");
                 return;
             }
-            (0, core_1.setOutput)("integration-tests", integrationTests);
-            (0, core_1.notice)(`Integration tests found: ${JSON.stringify(integrationTests, null, 2)}`);
+            const integrationTestGroups = createTestGroups(config.countRunners, integrationTests);
+            (0, core_1.setOutput)("integration-tests", integrationTestGroups);
+            (0, core_1.notice)(`Integration tests found: ${JSON.stringify(integrationTestGroups, null, 2)}`);
             if (componentTests) {
-                (0, core_1.setOutput)("component-tests", componentTests);
-                (0, core_1.notice)(`Component tests found: ${JSON.stringify(componentTests, null, 2)}`);
+                const componentTestGroups = createTestGroups(config.countRunners, componentTests);
+                (0, core_1.setOutput)("component-tests", componentTestGroups);
+                (0, core_1.notice)(`Component tests found: ${JSON.stringify(componentTestGroups, null, 2)}`);
             }
         }
         catch (e) {
@@ -183,6 +186,24 @@ function createGlobPattern(testFolder, testFiles, ignoreTestFiles) {
     }
     (0, core_1.debug)(`Test file glob patterns for folder ${testFolder}: ${JSON.stringify(patterns, null, 2)}`);
     return patterns.join("\n");
+}
+function createTestGroups(groupCount, tests) {
+    // If the group count isn't valid, just return the tests
+    if ((isNaN(groupCount)) || groupCount <= 0) {
+        return tests;
+    }
+    // Group the tests into "groupCount" chunks and then join each group with ",",
+    //  as this is how the Cypress "run" commend requires the "spec" input if
+    //  multiple tests are specified
+    const testCountByChunk = Math.ceil(tests.length / groupCount);
+    return tests.reduce((groups, item, index) => {
+        const chunkIndex = Math.floor(index / testCountByChunk);
+        if (!groups[chunkIndex]) {
+            groups[chunkIndex] = []; // start a new chunk
+        }
+        groups[chunkIndex].push(item);
+        return groups;
+    }, []).map((group) => group.join(","));
 }
 
 
