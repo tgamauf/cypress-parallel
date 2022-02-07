@@ -27,7 +27,7 @@ found in the configuration file.
 ## Usage
 
 ```yaml
-- uses tgamauf/cypress-parallel@v1
+- uses: tgamauf/cypress-parallel@v1
   with:
     # This is the directory of the Cypress config file. If it isn't provided the current
     #  working directory is used.
