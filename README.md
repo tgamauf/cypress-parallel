@@ -1,5 +1,8 @@
 # Cypress Parallel
 
+| :exclamation:  This action currently does not support Cypress 10+. |
+|--------------------------------------------------------------------|
+
 This action allows you to easily execute [Cypress](https://www.cypress.io/) tests in parallel without the use of 
 [Cypress Dashboard](https://www.cypress.io/dashboard/).
 
