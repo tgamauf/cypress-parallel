@@ -1,5 +1,9 @@
 # Cypress Parallel
 
+**Note**
+cypress-parallel v1 supports up to Cypress 9. Please use cypress-parallel v2 for Cypress 10+.
+
+
 This action allows you to easily execute [Cypress](https://www.cypress.io/) tests in parallel without the use of 
 [Cypress Dashboard](https://www.cypress.io/dashboard/).
 
