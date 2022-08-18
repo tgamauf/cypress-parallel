@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/tgamauf/cypress-parallel#readme",
   "dependencies": {
-    "@actions/core": "^1.9.0",
+    "@actions/core": "^1.9.1",
     "@actions/glob": "^0.3.0"
   },
   "devDependencies": {
