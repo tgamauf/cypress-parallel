@@ -1,10 +1,12 @@
 import {debug, error, getBooleanInput, getInput, info, notice, setFailed, setOutput,} from "@actions/core";
 import {create as createGlobber} from "@actions/glob";
-import {readFileSync} from "fs";
+import {readFileSync, existsSync} from "fs";
 import * as path from "path";
 
 
-const CYPRESS_CONFIG_FILE_NAME = "cypress.json";
+const CYPRESS_CONFIG_FILE_NAME_PRE_V10 = "cypress.json";
+const CYPRESS_CONFIG_FILE_NAME_V10_JS = "cypress.config.js";
+const CYPRESS_CONFIG_FILE_NAME_V10_TS = "cypress.config.ts";
 
 // Defaults for Cypress config:
 //  https://docs.cypress.io/guides/references/configuration#Folders-Files
@@ -91,17 +93,30 @@ export default async function parse(): Promise<void> {
 }
 
 async function findWorkingDirectory(): Promise<string | null> {
-  const globber = await createGlobber(`**/${CYPRESS_CONFIG_FILE_NAME}`);
+  const globber = await createGlobber(`**/${CYPRESS_CONFIG_FILE_NAME_PRE_V10}`);
   const results = await globber.glob();
 
-  debug(`Cypress config files found: ${JSON.stringify(results, null, 2)}`);
+  debug(`Old-style Cypress config files found: ${JSON.stringify(results, null, 2)}`);
 
   if (results.length == 0) {
-    error("No Cypress config file found.");
-    return null;
+    const globber = await createGlobber(`**/${CYPRESS_CONFIG_FILE_NAME_V10_JS}\n**/${CYPRESS_CONFIG_FILE_NAME_V10_TS}`);
+    const results = await globber.glob();
+
+    debug(`New-style Cypress config files found: ${JSON.stringify(results, null, 2)}`);
+
+    if (results.length == 0) {  
+      error("No Cypress config file found.");
+      return null;
+    }
+    if (results.length > 1) {
+      error("Multiple Cypress config files found.");
+      return null;
+    }
+
+    return path.dirname(results[0]);
   }
   if (results.length > 1) {
-    error("Multiple Cypress config file found.");
+    error("Multiple Cypress config files found.");
     return null;
   }
 
@@ -110,8 +125,16 @@ async function findWorkingDirectory(): Promise<string | null> {
 
 async function loadCypressConfig(): Promise<CypressConfig | null> {
   try {
-    const data = readFileSync(CYPRESS_CONFIG_FILE_NAME);
-    const config = JSON.parse(data.toString());
+    if (existsSync(CYPRESS_CONFIG_FILE_NAME_PRE_V10)) {
+      const data = readFileSync(CYPRESS_CONFIG_FILE_NAME_PRE_V10);
+      const config = JSON.parse(data.toString());
+    } else if (existsSync(CYPRESS_CONFIG_FILE_NAME_V10_JS)) {
+      const config = require(CYPRESS_CONFIG_FILE_NAME_PRE_V10);
+    } else if (existsSync(CYPRESS_CONFIG_FILE_NAME_V10_TS)) {
+      throw new Error(CYPRESS_CONFIG_FILE_NAME_V10_TS + ' is not supported yet.')
+    } else {
+      throw new Error('No supported config file found.')
+    }
 
     return {
       integrationFolder: DEFAULT_INTEGRATION_FOLDER,
@@ -222,4 +245,4 @@ function createTestGroups(groupCount: number, tests: string[]): string[] {
 
 export type { TestFiles };
 
-export { CYPRESS_CONFIG_FILE_NAME, DEFAULT_INTEGRATION_FOLDER, DEFAULT_TEST_FILES };
+export { CYPRESS_CONFIG_FILE_NAME_PRE_V10, DEFAULT_INTEGRATION_FOLDER, DEFAULT_TEST_FILES };
