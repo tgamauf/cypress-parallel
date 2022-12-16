@@ -2,7 +2,7 @@ import {mkdtempSync, readFileSync, writeFileSync} from "fs";
 import path from "path";
 import {tmpdir} from "os";
 import ts from "typescript";
-import {error, info} from "@actions/core";
+import {debug, error, info} from "@actions/core";
 
 import CypressBaseConfigParser from "./cypressBaseConfigParser";
 import {TestFiles} from "./types";
@@ -154,6 +154,8 @@ class CypressJSConfigParser extends CypressConfigParser {
     const configFilePath = CypressJSConfigParser.getConfigFile(this.workingDirectory);
     let config;
     if (configFilePath) {
+      debug(`JS config file found at "${configFilePath}"`);
+
       config = this.processConfig(configFilePath)
     } else {
       throw new Error("no supported config file found.")
