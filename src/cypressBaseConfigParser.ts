@@ -31,7 +31,7 @@ export default abstract class CypressBaseConfigParser {
     debug(`Cypress config files found: ${JSON.stringify(results, null, 2)}`);
 
     if (results.length == 0) {
-      error("No Cypress config file found.");
+      debug(`No config file of type ${JSON.stringify(this.VALID_CONFIG_FILE_NAMES)} found at ${cwd}.`);
       return null;
     }
     if (results.length > 1) {
