@@ -56,7 +56,7 @@ abstract class CypressConfigParser extends CypressBaseConfigParser {
     if (configFilePath === null) {
       throw new Error("no supported config file found.")
     }
-    const rawConfig = require(configFilePath);
+    const rawConfig = require(path.resolve(configFilePath));
 
     info(`Cypress config found at "${configFilePath}: ${JSON.stringify(rawConfig, null, 2)}`);
 
@@ -154,8 +154,6 @@ class CypressJSConfigParser extends CypressConfigParser {
     const configFilePath = CypressJSConfigParser.getConfigFile(this.workingDirectory);
     let config;
     if (configFilePath) {
-      debug(`JS config file found at "${configFilePath}"`);
-
       config = this.processConfig(configFilePath)
     } else {
       throw new Error("no supported config file found.")
