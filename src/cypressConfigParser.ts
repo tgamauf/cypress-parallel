@@ -2,7 +2,7 @@ import {mkdtempSync, readFileSync, writeFileSync} from "fs";
 import path from "path";
 import {tmpdir} from "os";
 import ts from "typescript";
-import {debug, error, info} from "@actions/core";
+import {error, info} from "@actions/core";
 
 import CypressBaseConfigParser from "./cypressBaseConfigParser";
 import {TestFiles} from "./types";
