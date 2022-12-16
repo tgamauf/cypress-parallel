@@ -9,10 +9,6 @@ inputs:
   working-directory:
     description: If provided, this is the path the Cypress config file is expected at.
     required: false
-  follow-symbolic-links:
-    description: Indicates whether to follow symbolic links.
-    required: false
-    default: true
   count-runners:
     description: Maximum number of runners that should be used.
     required: false

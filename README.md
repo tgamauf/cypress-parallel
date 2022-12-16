@@ -1,8 +1,5 @@
 # Cypress Parallel
 
-| :exclamation:  This action currently does not support Cypress 10+. |
-|--------------------------------------------------------------------|
-
 This action allows you to easily execute [Cypress](https://www.cypress.io/) tests in parallel without the use of 
 [Cypress Dashboard](https://www.cypress.io/dashboard/).
 
@@ -15,17 +12,29 @@ provides two different output parameters:
 - `integration-tests`: list of integration test specs that have been found
 - `component-tests`: list of component test specs that have been found
 
+### Cypress 9
 Integration tests use the following configuration options in [cypress.json](
-https://docs.cypress.io/guides/references/configuration#cypress-json) to search for tests: `integrationFolder`, 
+https://docs.cypress.io/guides/references/legacy-configuration#cypress-json) to search for tests: `integrationFolder`, 
 `testFiles`, and `ignoreTestFiles`. As all of these are optional, the default folder `cypress/integration` and the 
 default test file pattern `**/*.*` will be used if no configuration is found.
 
 Component tests use the following configuration options in [cypress.json](
-https://docs.cypress.io/guides/references/configuration#cypress-json) to search for tests: `componentFolder`, 
+https://docs.cypress.io/guides/references/legacy-configuration#cypress-json) to search for tests: `componentFolder`, 
 `testFiles`, and `ignoreTestFiles`. If the `componentFolder` option doesn't exist, the `component-tests` output parameter
 won't be available. As the `testFiles` is optional, the default test file pattern `**/*.*` will be used if it isn't
 found in the configuration file.
 
+### Cypress 10+
+Integration tests use the `e2e.specPattern` and `e2e.excludeSpecPattern` keys in [cypress.config.{js,mjs,cjs,ts}](
+https://docs.cypress.io/guides/references/configuration#e2e) to search for tests. All of these are optional, the default
+spec pattern `cypress/e2e/**/*.cy.{js,jsx,ts,tsx}` and exclude pattern `*.hot-update.js` will be used if no
+configuration is found.
+
+Component tests use the `component.specPattern` and `component.excludeSpecPattern` keys in
+[cypress.config.{js,mjs,cjs,ts}](https://docs.cypress.io/guides/references/configuration#component) to search for tests.
+All of these are optional, the default spec pattern `**/*.cy.{js,jsx,ts,tsx}` and exclude pattern `['/snapshots/*', 
+'/image_snapshots/*']` will be used if no configuration is found. Note that the pattern specified for the e2e tests is
+also automatically excluded, as noted in the docs.
 
 ## Usage
 
@@ -35,10 +44,6 @@ found in the configuration file.
     # This is the directory of the Cypress config file. If it isn't provided the current
     #  working directory is used.
     working-directory:
-
-    # Indicates if search should follow symbolic links, which can slow down execution in
-    #  certain circumstances. Default: true.
-    follow-symbolic-links:
 
     # Maximum number of test runners that should be used. This will split the tests, so
     #  they are distributed over the defined number of runners.
@@ -78,7 +83,7 @@ jobs:
 
       - name: Parse test files for parallelization
         id: parse
-        uses: tgamauf/cypress-parallel@v1
+        uses: tgamauf/cypress-parallel@v2
 
   test-integration:
     runs-on: ubuntu-latest
