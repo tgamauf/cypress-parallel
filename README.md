@@ -42,7 +42,7 @@ also automatically excluded, as noted in the docs.
 ## Usage
 
 ```yaml
-- uses: tgamauf/cypress-parallel@v1
+- uses: tgamauf/cypress-parallel@v2
   with:
     # This is the directory of the Cypress config file. If it isn't provided the current
     #  working directory is used.
@@ -68,16 +68,16 @@ jobs:
       component-tests: ${{ steps.parse.outputs.component-tests }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Build
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v5
         with:
           runTests: false
           build: npm run build
           
       - name: Save build folder
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: build
           if-no-files-found: error
@@ -101,13 +101,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Download the build folders
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build
           path: build
           
       - name: Execute tests
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v5
         with:
           # We have already installed all dependencies above
           install: false
@@ -123,16 +123,16 @@ jobs:
         spec: ${{ fromJson(needs.prepare.outputs.component-tests) }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Download the build folders
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: build
           path: build
           
       - name: Execute tests
-        uses: cypress-io/github-action@v2.0.0
+        uses: cypress-io/github-action@v5
         with:
           install: false
           # To run component tests we need to use "cypress run-ct"
