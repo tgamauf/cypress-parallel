@@ -24,6 +24,7 @@
   "homepage": "https://github.com/tgamauf/cypress-parallel#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
+    "cypress": "^12.1.0",
     "minimatch": "^5.1.1",
     "squirrelly": "^8.0.8",
     "typescript": "^4.9.4"
