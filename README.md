@@ -129,7 +129,7 @@ jobs:
           path: build
           
       - name: Execute tests
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v2.0.0
         with:
           install: false
           # To run component tests we need to use "cypress run-ct"
