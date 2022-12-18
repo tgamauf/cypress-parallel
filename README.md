@@ -1,5 +1,8 @@
 # Cypress Parallel
 
+| :exclamation:  This action currently does not support the `defineConfig` function in `cypress.config.*js` and `cypress.config.ts` config files and will fail if it is used. |
+|--------------------------------------------------------------------|
+
 This action allows you to easily execute [Cypress](https://www.cypress.io/) tests in parallel without the use of 
 [Cypress Dashboard](https://www.cypress.io/dashboard/).
 
